@@ -18,23 +18,39 @@ export default function QRScanner({ onDecoded }: Props) {
     const startScanning = async () => {
         setError("");
         const hints = new Map();
-        hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]);
+        // 增加更多识别格式
+        hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+            BarcodeFormat.QR_CODE,
+            BarcodeFormat.DATA_MATRIX,
+            BarcodeFormat.AZTEC,
+            BarcodeFormat.PDF_417
+        ]);
+        // 尝试提高识别容忍度
+        hints.set(DecodeHintType.TRY_HARDER, true);
         const reader = new BrowserMultiFormatReader(hints);
 
         try {
             // 优先后置摄像头
-            controlsRef.current = await reader.decodeFromVideoDevice(
-                undefined,
+            const constraints = { video: { facingMode: { ideal: "environment" } } };
+            controlsRef.current = await reader.decodeFromConstraints(
+                constraints,
                 videoRef.current!,
                 (result, err) => {
                     if (result?.getText()) {
                         onDecoded(result.getText());
                         // 保持预览不断，可根据需要自动停止：controls.stop();
                     }
-                    if (err && !(err instanceof Error)) {
-                        setError("无法解析二维码");
-                    } else if (err) {
-                        setError(err.message || "二维码解析失败");
+                    if (err) {
+                        // 过滤常见的连续扫描错误
+                        if (err instanceof Error &&
+                            err.message.includes("No MultiFormat Readers were able to detect the code")) {
+                            // 扫描中不显示此类错误，避免闪烁
+                            return;
+                        } else if (err instanceof Error) {
+                            setError(err.message || "二维码解析失败");
+                        } else {
+                            setError("无法解析二维码");
+                        }
                     }
                 }
             );
@@ -71,12 +87,30 @@ export default function QRScanner({ onDecoded }: Props) {
         if (!file) return;
         try {
             const url = URL.createObjectURL(file);
-            // 使用同一 reader 解析图片
+            // 使用同一 reader 解析图片，增强配置
             const hints = new Map();
-            hints.set(DecodeHintType.POSSIBLE_FORMATS, [BarcodeFormat.QR_CODE]);
+            hints.set(DecodeHintType.POSSIBLE_FORMATS, [
+                BarcodeFormat.QR_CODE,
+                BarcodeFormat.DATA_MATRIX,
+                BarcodeFormat.AZTEC,
+                BarcodeFormat.PDF_417
+            ]);
+            hints.set(DecodeHintType.TRY_HARDER, true);
+            // 增加容错率
+            hints.set(DecodeHintType.CHARACTER_SET, "UTF-8");
             const reader = new BrowserMultiFormatReader(hints);
-            const result = await reader.decodeFromImageUrl(url);
-            onDecoded(result.getText());
+
+            try {
+                const result = await reader.decodeFromImageUrl(url);
+                onDecoded(result.getText());
+            } catch (decodeErr) {
+                if (decodeErr instanceof Error &&
+                    decodeErr.message.includes("No MultiFormat Readers were able to detect the code")) {
+                    setError("无法识别图片中的二维码，请尝试使用清晰的二维码图片");
+                } else {
+                    throw decodeErr;
+                }
+            }
         } catch (err: unknown) {
             if (err instanceof Error) {
                 setError(err.message || "图片解析失败");
