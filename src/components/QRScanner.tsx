@@ -27,7 +27,7 @@ export default function QRScanner({ onDecoded }: Props) {
         controlsRef.current = await reader.decodeFromVideoDevice(
           undefined,
           videoRef.current!,
-          (result, err, controls) => {
+          (result, err) => {
             if (result?.getText()) {
               onDecoded(result.getText());
               // 保持预览不断，可根据需要自动停止：controls.stop();
