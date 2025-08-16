@@ -42,10 +42,26 @@ export default function QRScanner({ onDecoded }: Props) {
                         controlsRef.current?.stop();
                         setActive(false);
                         setIsScannerRunning(false);
-                        // 增加声音提示并滚动到结果区域
+                        // 增加声音提示
                         // const audio = new Audio("/path/to/success-sound.mp3");
                         // audio.play();
-                        document.getElementById("result-area")?.scrollIntoView({ behavior: "smooth" });
+
+                        // 使用更兼容的方式滚动到结果区域
+                        setTimeout(() => {
+                            const resultArea = document.getElementById("result-area");
+                            if (resultArea) {
+                                // 获取元素位置
+                                const rect = resultArea.getBoundingClientRect();
+                                const scrollTop = window.pageYOffset || document.documentElement.scrollTop;
+                                const targetTop = rect.top + scrollTop - 20; // 添加20px的偏移量，更好的视觉效果
+
+                                // 使用window.scrollTo，兼容性更好
+                                window.scrollTo({
+                                    top: targetTop,
+                                    behavior: "smooth"
+                                });
+                            }
+                        }, 300); // 延迟300ms，确保DOM已更新
                     }
                     if (err) {
                         // 过滤常见的连续扫描错误

@@ -27,10 +27,17 @@ export default function ScrollToTopButton() {
 
     // 点击回到顶部
     const scrollToTop = () => {
-        window.scrollTo({
-            top: 0,
-            behavior: "smooth"
-        });
+        // 使用更兼容的滚动方法
+        try {
+            // 现代浏览器
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        } catch (error) {
+            // 回退到基本滚动（适用于旧浏览器）
+            window.scrollTo(0, 0);
+        }
     };
 
     return (
