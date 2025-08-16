@@ -38,7 +38,14 @@ export default function QRScanner({ onDecoded }: Props) {
                 (result, err) => {
                     if (result?.getText()) {
                         onDecoded(result.getText());
-                        // 保持预览不断，可根据需要自动停止：controls.stop();
+                        // 保持预览不断，可根据需要自动停止：
+                        controlsRef.current?.stop();
+                        setActive(false);
+                        setIsScannerRunning(false);
+                        // 增加声音提示并滚动到结果区域
+                        // const audio = new Audio("/path/to/success-sound.mp3");
+                        // audio.play();
+                        document.getElementById("result-area")?.scrollIntoView({ behavior: "smooth" });
                     }
                     if (err) {
                         // 过滤常见的连续扫描错误

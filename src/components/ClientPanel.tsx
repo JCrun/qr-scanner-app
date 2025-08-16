@@ -16,7 +16,7 @@ export default function ClientPanel() {
   const rec = useMemo(() => (raw ? parseQr(raw) : null), [raw]);
 
   function copy(text: string) {
-    navigator.clipboard?.writeText(text).catch(() => {});
+    navigator.clipboard?.writeText(text).catch(() => { });
   }
   const onDecoded = (text: string) => {
     const event = new CustomEvent("qr-decoded", { detail: text });
@@ -38,7 +38,7 @@ export default function ClientPanel() {
       </div>
 
       {rec && (
-        <div className="rounded-2xl shadow border">
+        <div id="result-area" className="rounded-2xl shadow border">
           <div className="p-3 border-b flex items-center justify-between">
             <div className="font-medium">解析结果</div>
             <div className="flex gap-2">
