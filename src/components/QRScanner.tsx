@@ -23,7 +23,7 @@ export default function QRScanner({ onDecoded }: Props) {
       setError("");
       try {
         // 优先后置摄像头
-        const constraints: MediaStreamConstraints = { video: { facingMode: { ideal: "environment" } }, audio: false };
+        // const constraints: MediaStreamConstraints = { video: { facingMode: { ideal: "environment" } }, audio: false };
         controlsRef.current = await reader.decodeFromVideoDevice(
           undefined,
           videoRef.current!,
@@ -32,14 +32,20 @@ export default function QRScanner({ onDecoded }: Props) {
               onDecoded(result.getText());
               // 保持预览不断，可根据需要自动停止：controls.stop();
             }
-            if (err && (err as any).name === "NotFoundException") {
-              // 没识别到，忽略
+            if (err && !(err instanceof Error)) {
+              setError("无法解析二维码");
+            } else if (err) {
+              setError(err.message || "二维码解析失败");
             }
           }
         );
         setActive(true);
-      } catch (e: any) {
-        setError(e?.message || "无法启动摄像头");
+      } catch (e: unknown) {
+        if (e instanceof Error) {
+          setError(e.message || "无法启动摄像头");
+        } else {
+          setError("无法启动摄像头");
+        }
       }
     }
 
@@ -62,8 +68,12 @@ export default function QRScanner({ onDecoded }: Props) {
       const reader = new BrowserMultiFormatReader(hints);
       const result = await reader.decodeFromImageUrl(url);
       onDecoded(result.getText());
-    } catch (err: any) {
-      setError(err?.message || "图片解析失败");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message || "图片解析失败");
+      } else {
+        setError("图片解析失败");
+      }
     }
   }
 

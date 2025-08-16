@@ -8,7 +8,7 @@ export default function ClientPanel() {
   const [raw, setRaw] = useState<string>("");
 
   useEffect(() => {
-    const handler = (e: any) => setRaw(e.detail as string);
+    const handler = (e: CustomEvent<string>) => setRaw(e.detail);
     window.addEventListener("qr-decoded", handler);
     return () => window.removeEventListener("qr-decoded", handler);
   }, []);

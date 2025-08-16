@@ -22,6 +22,7 @@ export type QrRecord = {
   前表面处理数?: string;
   前工序数量?: string;
   原文?: string;
+  [key: string]: string | undefined;
 };
 
 const headers = [
@@ -49,7 +50,7 @@ export function parseQr(raw: string): QrRecord {
   headers.forEach((h, i) => {
     let v = parts[i] ?? "";
     if (h === "开工时间" || h === "完工时间") v = toTime(v) ?? v;
-    (out as any)[h] = v;
+    out[h] = v;
   });
   return out;
 }
